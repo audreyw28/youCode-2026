@@ -1,6 +1,6 @@
 # YouCode
 
-This repo is now split into a `frontend` app and a `backend` workspace so UI code and server-side work can evolve separately.
+This repo is split into a `frontend` app and a `backend` app so UI code and server-side work can evolve separately.
 
 ## Structure
 
@@ -17,14 +17,24 @@ The frontend lives in `frontend/` and contains the current Next.js experience.
 ### Run locally
 
 ```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-From the repo root this proxies to the frontend workspace and starts the Next.js dev server on `http://localhost:3000`.
+This starts the Next.js dev server on `http://localhost:3000`.
 
 ## Backend
 
 The backend lives in `backend/`. It is scaffolded for future API routes, services, and data-processing work.
+
+### Run locally
+
+```bash
+cd backend
+npm install
+npm run dev
+```
 
 Current folders:
 
