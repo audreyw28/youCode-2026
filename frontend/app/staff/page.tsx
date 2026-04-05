@@ -1,7 +1,27 @@
 'use client';
 
-import { ResidentQR } from '../components/ResidentQR';
 import { useState, useEffect } from 'react';
+
+type CurrentUser = {
+  nickname: string;
+  icon: string;
+  emoji: string;
+  name: string;
+  createdAt: number;
+};
+
+const emergencyContacts = [
+  {
+    label: 'Shelter emergency line',
+    number: '604-555-0123',
+    description: 'Use this line for urgent shelter or safety support.',
+  },
+  {
+    label: 'Rapid response desk',
+    number: '604-555-0188',
+    description: 'Reach out for intake coordination or urgent placement help.',
+  },
+];
 
 const urgentRequests = [
   {
@@ -66,8 +86,6 @@ const verifiedVolunteers = [
   },
 ];
 
-const issuedResidentId = 'RES-24018-LINH';
-
 function statusClass(status: string) {
   const normalized = status.toLowerCase();
 
@@ -77,12 +95,25 @@ function statusClass(status: string) {
 }
 
 export default function StaffDashboardPage() {
-  const [incomingResidents, setIncomingResidents] = useState([]);
+  const [incomingResidents, setIncomingResidents] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 
   useEffect(() => {
     const loadResidents = () => {
       const residents = JSON.parse(localStorage.getItem('incomingResidents') || '[]');
       setIncomingResidents(residents.slice(-10)); // last 10
+
+      const storedUser = localStorage.getItem('current_user');
+      if (storedUser) {
+        try {
+          setCurrentUser(JSON.parse(storedUser));
+        } catch {
+          localStorage.removeItem('current_user');
+          setCurrentUser(null);
+        }
+      } else {
+        setCurrentUser(null);
+      }
     };
 
     loadResidents();
@@ -161,7 +192,29 @@ export default function StaffDashboardPage() {
           </div>
 
           <div className="incoming-list">
-            {incomingResidents.length === 0 ? (
+            {currentUser ? (
+              <article key={currentUser.nickname} className="incoming-card incoming-card--current">
+                <div>
+                  <div className="incoming-card__header">
+                    <span className="incoming-badge">{currentUser.emoji}</span>
+                    <div>
+                      <h3>{currentUser.nickname}</h3>
+                      <p className="incoming-card__subtitle">Anonymous nickname</p>
+                    </div>
+                  </div>
+                  <p>Signed in</p>
+                  <p className="incoming-time">{new Date(currentUser.createdAt).toLocaleString('en-US')}</p>
+                </div>
+                <div className="user-action-block">
+                  <p className="user-action-block__label">Emergency contact</p>
+                  <a className="emergency-contact-link" href="tel:6045550123">
+                    Call 604-555-0123
+                  </a>
+                </div>
+              </article>
+            ) : null}
+
+            {incomingResidents.length === 0 && !currentUser ? (
               <p>No recent residents.</p>
             ) : (
               incomingResidents.map((resident: any) => (
@@ -169,9 +222,8 @@ export default function StaffDashboardPage() {
                   <div>
                     <h3>{resident.resource}</h3>
                     <p>{resident.address}</p>
-                    <p className="incoming-time">{new Date(resident.timestamp).toLocaleString()}</p>
+                    <p className="incoming-time">{new Date(resident.timestamp).toLocaleString('en-US')}</p>
                   </div>
-                  <ResidentQR residentId={resident.id} size={80} />
                 </article>
               ))
             )}
@@ -181,30 +233,51 @@ export default function StaffDashboardPage() {
         <div className="staff-panel">
           <div className="panel-heading">
             <div>
-              <p className="panel-kicker">ID issuance</p>
-              <h2>Resident QR card</h2>
+              <p className="panel-kicker">Resident support</p>
+              <h2>Support handoff</h2>
             </div>
-            <div className="count-pill">Ready to print</div>
+            <div className="count-pill">Ready to share</div>
           </div>
 
           <div className="staff-issue-card">
             <div>
-              <h3>Linh Tran</h3>
-              <p>Emergency childcare and interview transit pass attached to resident record.</p>
+              <h3>Resident support bundle</h3>
+              <p>
+                Use this view to check the resident's arrival status, share details with team members, and connect to emergency assistance quickly.
+              </p>
             </div>
-            <ResidentQR residentId={issuedResidentId} size={144} />
+            <div className="issue-card__info">
+              <p className="issue-card__label">Assigned record</p>
+              <p className="issue-card__value">Linh Tran • Emergency childcare pass</p>
+              <p className="issue-card__note">No QR code displayed here to keep staff workflows focused on resident details.</p>
+            </div>
           </div>
         </div>
 
         <div className="staff-panel">
           <div className="panel-heading">
             <div>
-              <p className="panel-kicker">Verified network</p>
-              <h2>Volunteer roster</h2>
+              <p className="panel-kicker">Emergency contacts</p>
+              <h2>Contact at a glance</h2>
             </div>
-            <div className="count-pill">{verifiedVolunteers.length} ready</div>
+            <div className="count-pill">{emergencyContacts.length} lines</div>
           </div>
+          <div className="emergency-contact-list">
+            {emergencyContacts.map((line) => (
+              <article key={line.number} className="emergency-contact-card">
+                <div>
+                  <h3>{line.label}</h3>
+                  <p>{line.description}</p>
+                </div>
+                <a href={`tel:${line.number.replace(/[^0-9]/g, '')}`} className="emergency-contact-link">
+                  {line.number}
+                </a>
+              </article>
+            ))}
+          </div>
+        </div>
 
+        <div className="staff-panel">
           <div className="volunteer-list">
             {verifiedVolunteers.map((volunteer) => (
               <article key={volunteer.name} className="volunteer-card">

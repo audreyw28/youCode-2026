@@ -1,46 +1,91 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import Link from 'next/link';
+import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const demoCredentials = {
-  email: 'user@free-me.org',
-  password: 'welcome123',
-};
+const iconOptions = [
+  { id: 'Turtle', emoji: '🐢' },
+  { id: 'Dolphin', emoji: '🐬' },
+  { id: 'Elephant', emoji: '🐘' },
+  { id: 'Lion', emoji: '🦁' },
+];
 
 const quickNotes = [
-  'Look up shelter, childcare, and career support in one place.',
-  'Open directions quickly when you are ready to travel.',
-  'Print a visit sheet to keep the route details with you.',
+  'Pick an animal icon and enter your number to sign in anonymously.',
+  'Your nickname is saved locally so staff can recognize you without showing your real name.',
+  'This keeps your identity private from people waiting behind you.',
 ];
+
+type CurrentUser = {
+  nickname: string;
+  icon: string;
+  emoji: string;
+  createdAt: number;
+};
+
+type BookingRecord = {
+  id: string;
+  resource: string;
+  address: string;
+  category: string;
+  timestamp: number;
+};
 
 export default function UserLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [selectedIconId, setSelectedIconId] = useState(iconOptions[0].id);
+  const [userNumber, setUserNumber] = useState('');
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [bookingHistory, setBookingHistory] = useState<BookingRecord[]>([]);
+  const [showBookingHistory, setShowBookingHistory] = useState(false);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('current_user');
+    if (stored) {
+      try {
+        setCurrentUser(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem('current_user');
+      }
+    }
+
+    const storedBookings = localStorage.getItem('incomingResidents');
+    if (storedBookings) {
+      try {
+        setBookingHistory(JSON.parse(storedBookings));
+      } catch {
+        localStorage.removeItem('incomingResidents');
+      }
+    }
+  }, []);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError('');
-    setIsSubmitting(true);
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const isValidLogin =
-      normalizedEmail === demoCredentials.email && password === demoCredentials.password;
+    const trimmedNumber = userNumber.trim();
+    if (!trimmedNumber || !/^[0-9]{1,3}$/.test(trimmedNumber)) {
+      setError('Please enter a simple number like 11 or 95 so we can use your anonymous nickname.');
+      return;
+    }
 
-    window.setTimeout(() => {
-      setIsSubmitting(false);
+    const icon = iconOptions.find((option) => option.id === selectedIconId) ?? iconOptions[0];
+    const nickname = `${icon.id}${trimmedNumber}`;
+    const user: CurrentUser = {
+      nickname,
+      icon: icon.id,
+      emoji: icon.emoji,
+      createdAt: Date.now(),
+    };
 
-      if (!isValidLogin) {
-        setError('Use the demo user login shown below to continue.');
-        return;
-      }
+    localStorage.setItem('current_user', JSON.stringify(user));
+    setCurrentUser(user);
+    setShowBookingHistory(true);
+  };
 
-      router.push('/');
-    }, 450);
+  const handleContinue = () => {
+    router.push('/');
   };
 
   return (
@@ -49,9 +94,9 @@ export default function UserLoginPage() {
         <div className="admin-login-card">
           <div className="admin-login-card__intro">
             <p className="admin-login-card__eyebrow">User access</p>
-            <h1>Sign in to view resources</h1>
+            <h1>Use your anonymous nickname</h1>
             <p className="admin-login-card__copy">
-              Open the resource finder, save time at check-in, and keep transit-ready support details close by.
+              Choose an animal, enter a number, and staff will recognize your anonymous nickname without showing your real name.
             </p>
 
             <div className="admin-login-card__notes">
@@ -61,56 +106,79 @@ export default function UserLoginPage() {
                 </div>
               ))}
             </div>
+
           </div>
 
           <form className="admin-login-form" onSubmit={handleSubmit}>
-            <div className="admin-login-form__demo">
-              <strong>Demo login</strong>
-              <span>{demoCredentials.email}</span>
-              <span>{demoCredentials.password}</span>
+            <div className="icon-picker-label">Choose your animal</div>
+            <div className="icon-picker-grid">
+              {iconOptions.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  className={`icon-picker-button ${selectedIconId === option.id ? 'is-selected' : ''}`}
+                  onClick={() => setSelectedIconId(option.id)}
+                  aria-pressed={selectedIconId === option.id}
+                >
+                  <span className="icon-picker-button__emoji">{option.emoji}</span>
+                  <span>{option.id}</span>
+                </button>
+              ))}
             </div>
 
             <label className="admin-login-form__field">
-              <span>Email</span>
+              <span>Your number</span>
               <input
-                type="email"
-                name="email"
-                autoComplete="email"
-                placeholder="user@free-me.org"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                type="text"
+                name="number"
+                inputMode="numeric"
+                placeholder="11"
+                value={userNumber}
+                onChange={(event) => setUserNumber(event.target.value)}
                 required
               />
-            </label>
-
-            <label className="admin-login-form__field">
-              <span>Password</span>
-              <input
-                type="password"
-                name="password"
-                autoComplete="current-password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-              />
+              <small>Use a simple number so your nickname stays anonymous.</small>
             </label>
 
             {error ? <p className="admin-login-form__error">{error}</p> : null}
 
-            <div className="admin-login-form__meta">
-              <label className="admin-login-form__remember">
-                <input type="checkbox" name="remember" />
-                <span>Keep me signed in on this device</span>
-              </label>
-              <Link href="/" className="admin-login-form__link">
-                Open resource finder
-              </Link>
-            </div>
-
             <button type="submit" className="admin-login-form__submit">
-              {isSubmitting ? 'Checking...' : 'Log in'}
+              Use my nickname
             </button>
+
+            {currentUser ? (
+              <div className="current-user-card">
+                <button type="button" className="admin-login-form__submit" onClick={handleContinue}>
+                  Continue to Free me
+                </button>
+              </div>
+            ) : null}
+
+            {showBookingHistory && bookingHistory.length > 0 ? (
+              <div className="booking-history-card">
+                <p className="admin-login-card__eyebrow">Previous bookings</p>
+                <div className="booking-history-list">
+                  {bookingHistory.slice(-5).reverse().map((record) => (
+                    <div key={record.id} className="booking-history-item">
+                      <div>
+                        <strong>{record.resource}</strong>
+                        <p>{record.address}</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="booking-history-button"
+                        onClick={() => {
+                          localStorage.setItem('lastBooking', JSON.stringify(record));
+                          router.push('/');
+                        }}
+                      >
+                        Review again
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </form>
         </div>
       </section>

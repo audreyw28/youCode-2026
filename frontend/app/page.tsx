@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ResidentQR } from './components/ResidentQR';
 import { communityCentres } from '../lib/data/communityData';
 import { childcarePrograms } from '../lib/data/childcareData';
@@ -48,7 +48,10 @@ const translations: Record<Language, {
   findSafeSupport: string;
   translationGuidance: string;
   needLabel: string;
+  timeLabel: string;
   childrenWelcomeLabel: string;
+  distanceLabel: string;
+  maxCostLabel: string;
   strollerAccess: string;
   filterStroller: string;
   availablePlaces: string;
@@ -80,6 +83,23 @@ const translations: Record<Language, {
   userLogin: string;
   adminLogin: string;
   languageLabel: string;
+  languageNeededPlaceholder: string;
+  languageNeededOptions: { code: Language; label: string }[];
+  selectDatePlaceholder: string;
+  selectMonthPlaceholder: string;
+  morningOption: string;
+  afternoonOption: string;
+  eveningOption: string;
+  ageOption0to2: string;
+  ageOption3to5: string;
+  ageOption6to12: string;
+  ageOption12to18: string;
+  distanceOption5: string;
+  distanceOption10: string;
+  distanceOption20: string;
+  costOptionFree: string;
+  costOption25: string;
+  costOption50: string;
   shelter: string;
   childcare: string;
   career: string;
@@ -87,18 +107,21 @@ const translations: Record<Language, {
 }> = {
   en: {
     title: 'Free me',
-    welcomeHome: 'Welcome home',
-    slogan: 'Find calm, clear next steps with trusted shelter, childcare, and career support.',
+    welcomeHome: 'Short Notice? No Worries!',
+    slogan: 'Leave it up to us to find somewhere safe and fun for the little one.',
     navFeatures: 'Features',
     navResources: 'Resources',
     navContact: 'Contact',
-    quickStart: 'Quick start',
-    findSafeSupport: 'Find safe support near you',
-    translationGuidance: 'Translation-friendly guidance',
-    needLabel: 'Need',
-    childrenWelcomeLabel: 'Children welcome',
-    strollerAccess: 'Stroller access',
-    filterStroller: 'Stroller access',
+    quickStart: 'Quick Search',
+    findSafeSupport: 'Find A Drop-Off',
+    translationGuidance: 'Use translation help',
+    needLabel: 'Date',
+    timeLabel: 'Time',
+    childrenWelcomeLabel: 'Child age',
+    distanceLabel: 'Distance',
+    maxCostLabel: 'Max Cost',
+    strollerAccess: 'Distance',
+    filterStroller: 'Language Needed',
     availablePlaces: 'Available places',
     totalVerifiedSpots: 'Total verified spots',
     placesLoaded: 'places loaded',
@@ -132,6 +155,28 @@ const translations: Record<Language, {
     userLogin: 'User log in',
     adminLogin: 'Admin log in',
     languageLabel: 'Language',
+    languageNeededPlaceholder: 'Language needed',
+    languageNeededOptions: [
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '中文' },
+      { code: 'pa', label: 'ਪੰਜਾਬੀ' },
+      { code: 'tl', label: 'Tagalog' },
+    ],
+    selectDatePlaceholder: 'Select Date',
+    selectMonthPlaceholder: 'Select Month',
+    morningOption: 'Morning',
+    afternoonOption: 'Afternoon',
+    eveningOption: 'Evening',
+    ageOption0to2: '0-2 years',
+    ageOption3to5: '3-5 years',
+    ageOption6to12: '6-12 years',
+    ageOption12to18: '12-18 years',
+    distanceOption5: 'Up to 5 mi',
+    distanceOption10: 'Up to 10 mi',
+    distanceOption20: 'Up to 20 mi',
+    costOptionFree: 'Free',
+    costOption25: '$0 - $25',
+    costOption50: '$0 - $50',
   },
   zh: {
     title: 'Free me',
@@ -143,10 +188,13 @@ const translations: Record<Language, {
     quickStart: '快速开始',
     findSafeSupport: '查找安全支持',
     translationGuidance: '翻译友好指南',
-    needLabel: '需求',
-    childrenWelcomeLabel: '欢迎儿童',
-    strollerAccess: '婴儿车通道',
-    filterStroller: '婴儿车通道',
+    needLabel: '日期',
+    timeLabel: '时间',
+    childrenWelcomeLabel: '儿童年龄',
+    distanceLabel: '距离',
+    maxCostLabel: '最大成本',
+    strollerAccess: '距离',
+    filterStroller: '所需语言',
     availablePlaces: '可用地点',
     totalVerifiedSpots: '已验证地点总数',
     placesLoaded: '地点已加载',
@@ -180,6 +228,28 @@ const translations: Record<Language, {
     userLogin: '用户登录',
     adminLogin: '管理员登录',
     languageLabel: '语言',
+    languageNeededPlaceholder: '所需语言',
+    languageNeededOptions: [
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '中文' },
+      { code: 'pa', label: 'ਪੰਜਾਬੀ' },
+      { code: 'tl', label: 'Tagalog' },
+    ],
+    selectDatePlaceholder: '选择日期',
+    selectMonthPlaceholder: '选择月份',
+    morningOption: '上午',
+    afternoonOption: '下午',
+    eveningOption: '晚上',
+    ageOption0to2: '0-2岁',
+    ageOption3to5: '3-5岁',
+    ageOption6to12: '6-12岁',
+    ageOption12to18: '12-18岁',
+    distanceOption5: '5英里以内',
+    distanceOption10: '10英里以内',
+    distanceOption20: '20英里以内',
+    costOptionFree: '免费',
+    costOption25: '$0 - $25',
+    costOption50: '$0 - $50',
   },
   pa: {
     title: 'Free me',
@@ -191,10 +261,13 @@ const translations: Record<Language, {
     quickStart: 'ਤੁਰੰਤ ਸ਼ੁਰੂ ਕਰੋ',
     findSafeSupport: 'ਸੁਰੱਖਿਅਤ ਸਹਾਇਤਾ ਲੱਭੋ',
     translationGuidance: 'ਅਨੁਵਾਦ-ਮਿੱਤਰ ਦਿਸ਼ਾ-ਨਿਰਦੇਸ਼',
-    needLabel: 'ਲੋੜ',
-    childrenWelcomeLabel: 'ਬੱਚਿਆਂ ਦਾ ਸੁਆਗਤ',
-    strollerAccess: 'ਸਟ੍ਰੋਲਰ ਐਕਸੇਸ',
-    filterStroller: 'ਸਟ੍ਰੋਲਰ ਐਕਸੇਸ',
+    needLabel: 'ਤਾਰੀਖ',
+    timeLabel: 'ਸਮਾਂ',
+    childrenWelcomeLabel: 'ਬੱਚੇ ਦੀ ਉਮਰ',
+    distanceLabel: 'ਦੂਰੀ',
+    maxCostLabel: 'ਅਧਿਕਤਮ ਖਰਚ',
+    strollerAccess: 'ਦੂਰੀ',
+    filterStroller: 'ਚਾਹੀਦੀ ਭਾਸ਼ਾ',
     availablePlaces: 'ਉਪਲਬਧ ਥਾਵਾਂ',
     totalVerifiedSpots: 'ਮੋਧਲਤ ਥਾਵਾਂ',
     placesLoaded: 'ਥਾਵਾਂ ਲੋਡ ਕੀਤੀਆਂ',
@@ -228,6 +301,28 @@ const translations: Record<Language, {
     userLogin: 'ਉਪਭੋਗਤਾ ਲੌਗਿਨ',
     adminLogin: 'ਐਡਮਿਨ ਲੌਗਿਨ',
     languageLabel: 'ਭਾਸ਼ਾ',
+    languageNeededPlaceholder: 'ਚਾਹੀਦੀ ਭਾਸ਼ਾ',
+    languageNeededOptions: [
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '中文' },
+      { code: 'pa', label: 'ਪੰਜਾਬੀ' },
+      { code: 'tl', label: 'Tagalog' },
+    ],
+    selectDatePlaceholder: 'ਤਾਰੀਖ਼ ਚੁਣੋ',
+    selectMonthPlaceholder: 'ਮਹੀਨਾ ਚੁਣੋ',
+    morningOption: 'ਸਵੇਰ',
+    afternoonOption: 'ਦੁਪਹਿਰ',
+    eveningOption: 'ਸੰਝ',
+    ageOption0to2: '0-2 ਸਾਲ',
+    ageOption3to5: '3-5 ਸਾਲ',
+    ageOption6to12: '6-12 ਸਾਲ',
+    ageOption12to18: '12-18 ਸਾਲ',
+    distanceOption5: '5 ਮੀਲ ਤੱਕ',
+    distanceOption10: '10 ਮੀਲ ਤੱਕ',
+    distanceOption20: '20 ਮੀਲ ਤੱਕ',
+    costOptionFree: 'ਮੁਫ਼ਤ',
+    costOption25: '$0 - $25',
+    costOption50: '$0 - $50',
   },
   tl: {
     title: 'Free me',
@@ -239,10 +334,13 @@ const translations: Record<Language, {
     quickStart: 'Mabilis na pagsisimula',
     findSafeSupport: 'Maghanap ng ligtas na tulong',
     translationGuidance: 'Patnubay na madaling isalin',
-    needLabel: 'Kailangan',
-    childrenWelcomeLabel: 'Malugod ang mga bata',
-    strollerAccess: 'Access sa stroller',
-    filterStroller: 'Access sa stroller',
+    needLabel: 'Petsa',
+    timeLabel: 'Oras',
+    childrenWelcomeLabel: 'Edad ng bata',
+    distanceLabel: 'Distansya',
+    maxCostLabel: 'Max Cost',
+    strollerAccess: 'Distansya',
+    filterStroller: 'Kailangang Wika',
     availablePlaces: 'Magagamit na mga lugar',
     totalVerifiedSpots: 'Kabuuang beripikadong lugar',
     placesLoaded: 'mga lugar na na-load',
@@ -276,6 +374,28 @@ const translations: Record<Language, {
     userLogin: 'Mag-log in',
     adminLogin: 'Admin Mag-log in',
     languageLabel: 'Wika',
+    languageNeededPlaceholder: 'Kailangang Wika',
+    languageNeededOptions: [
+      { code: 'en', label: 'English' },
+      { code: 'zh', label: '中文' },
+      { code: 'pa', label: 'ਪੰਜਾਬੀ' },
+      { code: 'tl', label: 'Tagalog' },
+    ],
+    selectDatePlaceholder: 'Pumili ng Petsa',
+    selectMonthPlaceholder: 'Pumili ng Buwan',
+    morningOption: 'Umaga',
+    afternoonOption: 'Hapon',
+    eveningOption: 'Gabi',
+    ageOption0to2: '0-2 taon',
+    ageOption3to5: '3-5 taon',
+    ageOption6to12: '6-12 taon',
+    ageOption12to18: '12-18 taon',
+    distanceOption5: 'Hanggang 5 mi',
+    distanceOption10: 'Hanggang 10 mi',
+    distanceOption20: 'Hanggang 20 mi',
+    costOptionFree: 'Libre',
+    costOption25: '$0 - $25',
+    costOption50: '$0 - $50',
   },
 };
 
@@ -286,21 +406,150 @@ const languageOptions: { code: Language; label: string }[] = [
   { code: 'tl', label: 'Tagalog' },
 ];
 
+const activityPrograms: ResourceItem[] = [
+  {
+    id: 'activity-1',
+    name: 'Beginner Ballet',
+    address: '225 E 1st Ave, Vancouver, BC',
+    printAddress: '225 E 1st Ave, Vancouver, BC',
+    phone: '604-555-0101',
+    category: 'community',
+    hasChild: true,
+    hasWheelchair: false,
+    lat: 49.2680,
+    lng: -123.1001,
+    extra: 'Age 6-8 · 1 spot left · English support',
+    transitSteps: ['Take the 9 bus toward Downtown', 'Exit at Main St Station', 'Walk two blocks south to East 1st Ave'],
+    transitRoute: 'Bus 9 → Main St Station',
+    estimatedTime: 'Approx. 28 mins',
+    stopName: 'Main St Station',
+    appointmentLabel: '16:00 - 18:00',
+  },
+  {
+    id: 'activity-2',
+    name: 'Afternoon Art Workshop',
+    address: '5851 West Blvd, Vancouver, BC',
+    printAddress: '5851 West Blvd, Vancouver, BC',
+    phone: '604-555-0155',
+    category: 'food',
+    hasChild: true,
+    hasWheelchair: true,
+    lat: 49.2550,
+    lng: -123.1578,
+    extra: 'Age 5-6 · Spanish support · 14 spots left',
+    transitSteps: ['Take the 99 B-Line', 'Transfer at King Edward Station', 'Walk south on West Blvd'],
+    transitRoute: 'Bus 99 → King Edward Station',
+    estimatedTime: 'Approx. 30 mins',
+    stopName: 'King Edward Station',
+    appointmentLabel: '17:00 - 19:00',
+  },
+  {
+    id: 'activity-3',
+    name: 'Community Swim Club',
+    address: '1030 Marine Dr, West Vancouver, BC',
+    printAddress: '1030 Marine Dr, West Vancouver, BC',
+    phone: '604-555-0202',
+    category: 'shelter',
+    hasChild: true,
+    hasWheelchair: true,
+    lat: 49.3207,
+    lng: -123.1400,
+    extra: 'Age 7-10 · Free · 10 spots left',
+    transitSteps: ['Ride the 257 bus toward Park Royal', 'Exit at Marine Drive', 'Walk east to the rec centre'],
+    transitRoute: 'Bus 257 → Marine Dr',
+    estimatedTime: 'Approx. 45 mins',
+    stopName: 'Marine Drive',
+    appointmentLabel: '17:00 - 19:00',
+  },
+  {
+    id: 'activity-4',
+    name: 'Little Gym Stars',
+    address: '9080 Hudson St, Vancouver, BC',
+    printAddress: '9080 Hudson St, Vancouver, BC',
+    phone: '604-555-0303',
+    category: 'community',
+    hasChild: true,
+    hasWheelchair: false,
+    lat: 49.2122,
+    lng: -123.1149,
+    extra: 'Age 9-10 · Mandarin support · 6 spots left',
+    transitSteps: ['Take the 49 bus toward Metrotown', 'Transfer at Metrotown Station', 'Walk north to Hudson Street'],
+    transitRoute: 'Bus 49 → Metrotown Station',
+    estimatedTime: 'Approx. 35 mins',
+    stopName: 'Metrotown Station',
+    appointmentLabel: '15:00 - 16:00',
+  },
+  {
+    id: 'activity-5',
+    name: 'Sports Play Camp',
+    address: '1661 Napier St, Vancouver, BC',
+    printAddress: '1661 Napier St, Vancouver, BC',
+    phone: '604-555-0404',
+    category: 'food',
+    hasChild: true,
+    hasWheelchair: false,
+    lat: 49.2731,
+    lng: -123.0616,
+    extra: 'Age 8-10 · French support · 9 spots left',
+    transitSteps: ['Take the C-Train toward Britannia', 'Walk to Napier Street'],
+    transitRoute: 'Community shuttle → Britannia',
+    estimatedTime: 'Approx. 35 mins',
+    stopName: 'Britannia Community Centre',
+    appointmentLabel: '17:00 - 19:00',
+  },
+  {
+    id: 'activity-6',
+    name: 'Library Reading Club',
+    address: '2750 Oak St, Vancouver, BC',
+    printAddress: '2750 Oak St, Vancouver, BC',
+    phone: '604-555-0505',
+    category: 'shelter',
+    hasChild: true,
+    hasWheelchair: true,
+    lat: 49.2558,
+    lng: -123.1384,
+    extra: 'Age 5-8 · French support · 2 spots left',
+    transitSteps: ['Ride the 3 bus to Oak Street', 'Walk west to the library'],
+    transitRoute: 'Bus 3 → Oak Street',
+    estimatedTime: 'Approx. 22 mins',
+    stopName: 'Oak St & 16th Ave',
+    appointmentLabel: '16:00 - 18:00',
+  },
+  {
+    id: 'activity-7',
+    name: 'Creative Music Lab',
+    address: '4100 Prince Edward St, Vancouver, BC',
+    printAddress: '4100 Prince Edward St, Vancouver, BC',
+    phone: '604-555-0606',
+    category: 'community',
+    hasChild: true,
+    hasWheelchair: true,
+    lat: 49.2430,
+    lng: -123.1154,
+    extra: 'Age 4-7 · Korean support · 8 spots left',
+    transitSteps: ['Take the 25 bus to Prince Edward', 'Walk one block north'],
+    transitRoute: 'Bus 25 → Prince Edward St',
+    estimatedTime: 'Approx. 20 mins',
+    stopName: 'Prince Edward St',
+    appointmentLabel: '14:00 - 15:30',
+  },
+];
+
 const featureCards = [
   {
-    title: 'Verified Trust',
-    copy: 'Every place on this list is screened so families can start from safer, trusted options.',
-    icon: 'Shield',
+    title: '100% Free',
+    copy: 'All registered programs and services are verified and completely free.',
+    icon: '🛡️',
   },
   {
-    title: 'Instant Matches',
-    copy: 'Move through nearby support quickly with clear categories, directions, and printable notes.',
-    icon: 'Spark',
+    title: "Today's Drop-Ins",
+    copy: 'Access available care programs that accept walk-ins today with no prior booking.',
+    icon: '⚡',
   },
   {
-    title: 'Language Support',
-    copy: 'Simple labels and guided next steps help people navigate services with more confidence.',
-    icon: 'Translate',
+    title: 'Religious Activities',
+    copy: 'Explore programs with cultural and spiritual components for your family.',
+    icon: '🔤',
   },
 ];
 
@@ -418,10 +667,20 @@ export default function Home() {
   const [wheelchair, setWheelchair] = useState(false);
   const [activeType, setActiveType] = useState<ResourceType>('all');
   const [language, setLanguage] = useState<Language>('en');
+  const [currentUser, setCurrentUser] = useState<{ nickname: string; emoji: string } | null>(null);
   const [selectedForPrint, setSelectedForPrint] = useState<ResourceItem | null>(null);
   const [showQR, setShowQR] = useState(false);
   const [qrId, setQrId] = useState<string>('');
   const [selectedItem, setSelectedItem] = useState<ResourceItem | null>(null);
+  const [lastBooking, setLastBooking] = useState<{ id: string; resource: string; address: string; category: string; timestamp: number } | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedTime, setSelectedTime] = useState('');
+  const [selectedChildAge, setSelectedChildAge] = useState('');
+  const [selectedDistance, setSelectedDistance] = useState<'5' | '10' | '20'>('5');
+  const [selectedMaxCost, setSelectedMaxCost] = useState<'free' | '25' | '50' | ''>('');
+  const [selectedLanguageNeeded, setSelectedLanguageNeeded] = useState<Language | ''>('');
 
   const t = translations[language];
   const categoryLabels: Record<Exclude<ResourceType, 'all'>, string> = {
@@ -429,6 +688,35 @@ export default function Home() {
     food: t.childcare,
     community: t.career,
   };
+
+  useEffect(() => {
+    const stored = localStorage.getItem('lastBooking');
+    if (stored) {
+      try {
+        setLastBooking(JSON.parse(stored));
+      } catch {
+        localStorage.removeItem('lastBooking');
+      }
+    }
+
+    const currentUserData = localStorage.getItem('current_user');
+    if (currentUserData) {
+      try {
+        const parsed = JSON.parse(currentUserData);
+        setCurrentUser({ nickname: parsed.nickname, emoji: parsed.emoji });
+        setIsLoggedIn(true);
+      } catch {
+        localStorage.removeItem('current_user');
+      }
+    }
+
+    const handleAutoLogout = () => {
+      localStorage.removeItem('current_user');
+    };
+
+    window.addEventListener('beforeunload', handleAutoLogout);
+    return () => window.removeEventListener('beforeunload', handleAutoLogout);
+  }, []);
 
   const allResources = useMemo<ResourceItem[]>(() => {
     const shelterItems = shelters.map((s, index) => ({
@@ -501,7 +789,7 @@ export default function Home() {
       appointmentLabel: 'Career appointment at 10:00 AM',
     }));
 
-    return [...shelterItems, ...foodItems, ...communityItems];
+    return activityPrograms;
   }, []);
 
   const filtered = useMemo(() => {
@@ -517,6 +805,7 @@ export default function Home() {
     const id = `RES-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     setQrId(id);
     setSelectedItem(item);
+    setSelectedForPrint({ ...item, residentId: id });
     setShowQR(true);
 
     // Save to localStorage
@@ -529,6 +818,8 @@ export default function Home() {
       category: item.category
     });
     localStorage.setItem('incomingResidents', JSON.stringify(residents));
+
+    requestAnimationFrame(() => window.print());
   };
 
   return (
@@ -572,9 +863,20 @@ export default function Home() {
                 ))}
               </select>
 
-              <Link href="/login" className="landing-nav__secondary">
-                {t.userLogin}
-              </Link>
+              {currentUser ? (
+                <button type="button" className="landing-nav__secondary" onClick={() => {
+                  localStorage.removeItem('current_user');
+                  setCurrentUser(null);
+                  setIsLoggedIn(false);
+                  window.location.href = '/';
+                }}>
+                  {currentUser.emoji} {currentUser.nickname}
+                </button>
+              ) : (
+                <Link href="/login" className="landing-nav__secondary">
+                  {t.userLogin}
+                </Link>
+              )}
               <Link href="/admin" className="landing-nav__primary">
                 {t.adminLogin}
               </Link>
@@ -588,6 +890,28 @@ export default function Home() {
               <p>{t.slogan}</p>
             </div>
           </section>
+
+          {isLoggedIn && lastBooking ? (
+            <section className="landing-quick-return">
+              <div className="landing-quick-return__label">Last booking</div>
+              <div className="landing-quick-return__card">
+                <div>
+                  <strong>{lastBooking.resource}</strong>
+                  <p>{lastBooking.address}</p>
+                </div>
+                <button
+                  type="button"
+                  className="landing-quick-return__button"
+                  onClick={() => {
+                    localStorage.removeItem('lastBooking');
+                    window.location.href = '/';
+                  }}
+                >
+                  Continue
+                </button>
+              </div>
+            </section>
+          ) : null}
 
           <section className="landing-features">
             {featureCards.map((card) => (
@@ -613,27 +937,75 @@ export default function Home() {
             <div className="landing-search-grid">
               <div className="landing-search-field">
                 <span>{t.needLabel}</span>
-                <div className="landing-search-field__value">{t.shelter}, {t.childcare}, or {t.career} help</div>
+                <div className="landing-search-field__value landing-search-field__date-pair">
+                  <select value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)}>
+                    <option value="" disabled>{t.selectDatePlaceholder}</option>
+                    {[...Array(31)].map((_, index) => (
+                      <option key={index} value={`${index + 1}`}>{index + 1}</option>
+                    ))}
+                  </select>
+                  <select value={selectedMonth} onChange={(event) => setSelectedMonth(event.target.value)}>
+                    <option value="" disabled>{t.selectMonthPlaceholder}</option>
+                    {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((month) => (
+                      <option key={month} value={month}>{month}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="landing-search-field">
+                <span>{t.timeLabel}</span>
+                <div className="landing-search-field__value">
+                  <select value={selectedTime} onChange={(event) => setSelectedTime(event.target.value)}>
+                    <option value="" disabled>{t.timeLabel}</option>
+                    <option value="morning">{t.morningOption}</option>
+                    <option value="afternoon">{t.afternoonOption}</option>
+                    <option value="evening">{t.eveningOption}</option>
+                  </select>
+                </div>
               </div>
               <div className="landing-search-field">
                 <span>{t.childrenWelcomeLabel}</span>
-                <div className="landing-search-field__value">{withChild ? 'Yes, currently filtered' : 'Optional filter available'}</div>
+                <div className="landing-search-field__value">
+                  <select value={selectedChildAge} onChange={(event) => setSelectedChildAge(event.target.value)}>
+                    <option value="" disabled>{t.childrenWelcomeLabel}</option>
+                    <option value="0-2">{t.ageOption0to2}</option>
+                    <option value="3-5">{t.ageOption3to5}</option>
+                    <option value="6-12">{t.ageOption6to12}</option>
+                    <option value="12-18">{t.ageOption12to18}</option>
+                  </select>
+                </div>
+              </div>
+              <div className="landing-search-field">
+                <span>{t.distanceLabel}</span>
+                <div className="landing-search-field__value landing-search-field__distance">
+                  <select value={selectedDistance} onChange={(event) => setSelectedDistance(event.target.value as '5' | '10' | '20')}>
+                    <option value="5">{t.distanceOption5}</option>
+                    <option value="10">{t.distanceOption10}</option>
+                    <option value="20">{t.distanceOption20}</option>
+                  </select>
+                </div>
+              </div>
+              <div className="landing-search-field">
+                <span>{t.maxCostLabel}</span>
+                <div className="landing-search-field__value">
+                  <select value={selectedMaxCost} onChange={(event) => setSelectedMaxCost(event.target.value as 'free' | '25' | '50' | '')}>
+                    <option value="" disabled>{t.maxCostLabel}</option>
+                    <option value="free">{t.costOptionFree}</option>
+                    <option value="25">{t.costOption25}</option>
+                    <option value="50">{t.costOption50}</option>
+                  </select>
+                </div>
               </div>
               <div className="landing-search-field">
                 <span>{t.filterStroller}</span>
-                <div className="landing-search-field__value">{wheelchair ? 'Yes, currently filtered' : 'Optional filter available'}</div>
-              </div>
-              <div className="landing-search-field">
-                <span>{t.availablePlaces}</span>
-                <div className="landing-search-field__value">{filtered.length} {t.showingCount.replace('{count}', String(filtered.length))}</div>
-              </div>
-              <div className="landing-search-field">
-                <span>{t.totalVerifiedSpots}</span>
-                <div className="landing-search-field__value">{allResources.length} {t.placesLoaded ?? 'places loaded'}</div>
-              </div>
-              <div className="landing-search-field">
-                <span>{t.bestNextStep}</span>
-                <div className="landing-search-field__value">{t.searchSummary}</div>
+                <div className="landing-search-field__value">
+                  <select value={selectedLanguageNeeded} onChange={(event) => setSelectedLanguageNeeded(event.target.value as Language)}>
+                    <option value="" disabled>{t.languageNeededPlaceholder}</option>
+                    {t.languageNeededOptions.map((option) => (
+                      <option key={option.code} value={option.code}>{option.label}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -645,6 +1017,18 @@ export default function Home() {
                 {t.browseWithLogin}
               </Link>
             </div>
+          </section>
+
+          <section className="landing-features">
+            {featureCards.map((card) => (
+              <article key={card.title} className="landing-feature-card">
+                <div className="landing-feature-card__icon" aria-hidden="true">
+                  {card.icon}
+                </div>
+                <h2>{card.title}</h2>
+                <p>{card.copy}</p>
+              </article>
+            ))}
           </section>
         </div>
       </section>
@@ -779,7 +1163,8 @@ export default function Home() {
           aria-hidden={!selectedForPrint}
         >
           {selectedForPrint ? (
-            <div className="print-sheet__page">
+            <>
+              <div className="print-sheet__page">
               <div className="print-sheet__destination-head">
                 <p className="print-sheet__eyebrow">{categoryMeta[selectedForPrint.category].eyebrow}</p>
                 <h1>
@@ -872,6 +1257,130 @@ export default function Home() {
                 <ResidentQR residentId={selectedForPrint.residentId || selectedForPrint.id} size={112} />
               </div>
             </div>
+
+            <div className="print-sheet__page print-sheet__page--secondary">
+              <div className="activity-pass-header">
+                <span className="activity-pass-badge">FreeMe!</span>
+                <h1>Activity Pass</h1>
+              </div>
+
+              <div className="activity-pass-subtitle">
+                <strong>Child Activity Information</strong>
+                <span>(Show this at the activity location)</span>
+              </div>
+
+              <div className="activity-pass-card activity-pass-card--soft">
+                <div className="activity-pass-card__title">
+                  <span>Mother / Guardian Name:</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Mother / Guardian Name:</span>
+                  <span className="activity-pass-line">{currentUser ? `${currentUser.nickname}` : '__________________________'}</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Phone Number (if you have one):</span>
+                  <span className="activity-pass-line">{selectedForPrint.phone ?? '__________________________'}</span>
+                </div>
+                <div className="activity-pass-field-row activity-pass-field-row--language">
+                  <span>Language (optional):</span>
+                  <div className="activity-pass-language-options">
+                    <label className="activity-pass-checkbox"><span>□</span> English</label>
+                    <label className="activity-pass-checkbox"><span>□</span> 中文</label>
+                    <label className="activity-pass-checkbox"><span>□</span> Español</label>
+                    <label className="activity-pass-checkbox"><span>□</span> Other:</label>
+                    <span className="activity-pass-line activity-pass-line--short">____</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="activity-pass-card activity-pass-card--soft">
+                <div className="activity-pass-card__title">
+                  <span>Child Information:</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Child Name:</span>
+                  <span className="activity-pass-line">__________________________</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Age:</span>
+                  <span className="activity-pass-line">{selectedChildAge || '____'}</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Special Needs / Allergies (if any):</span>
+                  <span className="activity-pass-line">__________________________</span>
+                </div>
+              </div>
+
+              <div className="activity-pass-card activity-pass-card--soft">
+                <div className="activity-pass-card__title">
+                  <span>Activity Details:</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Activity Name:</span>
+                  <span className="activity-pass-line">{selectedForPrint.name}</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Date:</span>
+                  <span className="activity-pass-line">{selectedMonth && selectedDate ? `${selectedMonth} ${selectedDate}` : '____'}</span>
+                  <span>Start:</span>
+                  <span className="activity-pass-line activity-pass-line--short">{selectedForPrint.appointmentLabel.split(' - ')[0] || '____'}</span>
+                  <span>End:</span>
+                  <span className="activity-pass-line activity-pass-line--short">{selectedForPrint.appointmentLabel.split(' - ')[1] || '____'}</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Location Name:</span>
+                  <span className="activity-pass-line">{selectedForPrint.name}</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Address:</span>
+                  <span className="activity-pass-line">{selectedForPrint.printAddress}</span>
+                </div>
+                <div className="activity-pass-field-row">
+                  <span>Activity Phone Number:</span>
+                  <span className="activity-pass-line">{selectedForPrint.phone ?? '____'}</span>
+                </div>
+              </div>
+
+              <div className="activity-pass-bottom-grid">
+                <div className="activity-pass-card activity-pass-card--mini">
+                  <div className="activity-pass-card__title">
+                    <span>Shelter Information:</span>
+                  </div>
+                  <div className="activity-pass-field-row">
+                    <span>Shelter Name:</span>
+                    <span className="activity-pass-line">____</span>
+                  </div>
+                  <div className="activity-pass-field-row">
+                    <span>Shelter Address:</span>
+                    <span className="activity-pass-line">____</span>
+                  </div>
+                  <div className="activity-pass-field-row">
+                    <span>Shelter Phone Number:</span>
+                    <span className="activity-pass-line">____</span>
+                  </div>
+                </div>
+                <div className="activity-pass-card activity-pass-card--mini">
+                  <div className="activity-pass-card__title">
+                    <span>Transportation:</span>
+                  </div>
+                  <div className="activity-pass-field-row activity-pass-field-row--transport">
+                    <label><span className="activity-pass-checkbox__mark">{selectedDistance ? '□' : '□'}</span> Walking</label>
+                    <label><span className="activity-pass-checkbox__mark">{selectedDistance ? '□' : '□'}</span> Bus</label>
+                    <label><span className="activity-pass-checkbox__mark">{selectedDistance ? '□' : '□'}</span> SkyTrain</label>
+                    <label><span className="activity-pass-checkbox__mark">{selectedDistance ? '□' : '□'}</span> Other:</label>
+                  </div>
+                  <div className="activity-pass-field-row">
+                    <span>Travel Time (approx):</span>
+                    <span className="activity-pass-line">{selectedForPrint.estimatedTime}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="activity-pass-footer">
+                FreeMe helps you find safe places for your child.
+              </div>
+            </div>
+          </>
           ) : null}
         </section>
       </section>

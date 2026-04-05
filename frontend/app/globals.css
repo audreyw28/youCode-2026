@@ -535,17 +535,17 @@ button {
 
 .landing-hero__eyebrow {
   margin: 0;
-  color: rgba(255, 250, 244, 0.82);
+  color: #fff;
   font-size: 1.35rem;
 }
 
 .landing-hero h1 {
   margin: 1rem 0 0;
-  color: var(--paper);
+  color: #fff;
   font-family: var(--font-display), cursive;
   font-size: clamp(4rem, 10vw, 7rem);
   line-height: 0.92;
-  text-shadow: 0 0.35rem 0 rgba(47, 100, 211, 0.18);
+  text-shadow: 0 0.35rem 0 rgba(31, 58, 128, 0.25);
 }
 
 .landing-hero__message {
@@ -563,6 +563,51 @@ button {
 
 .landing-hero__message p {
   margin: 0;
+}
+
+.landing-quick-return {
+  margin: 1.8rem auto 0;
+  width: min(64rem, 100%);
+  padding: 1.2rem;
+  background: rgba(255, 249, 244, 0.9);
+  border: 4px solid rgba(47, 100, 211, 0.14);
+  border-radius: 2rem;
+  box-shadow: 0 0.75rem 0 rgba(47, 100, 211, 0.12);
+}
+
+.landing-quick-return__label {
+  color: var(--blue);
+  font-size: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.landing-quick-return__card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 1rem 1.2rem;
+  background: #fff;
+  border: 3px solid rgba(47, 100, 211, 0.14);
+  border-radius: 1.5rem;
+}
+
+.landing-quick-return__card strong {
+  display: block;
+  font-size: 1.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.landing-quick-return__button {
+  min-width: 10rem;
+  padding: 0.9rem 1.2rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--ink);
+  color: white;
+  font-family: var(--font-display), cursive;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 .landing-features {
@@ -588,7 +633,7 @@ button {
   height: 5rem;
   margin: 0 auto 1rem;
   border-radius: 1.6rem;
-  background: rgba(173, 199, 255, 0.35);
+  background: rgba(248, 189, 223, 0.5);
   color: var(--blue);
   font-family: var(--font-display), cursive;
   font-size: 1rem;
@@ -678,6 +723,33 @@ button {
   padding: 0.9rem 1rem;
   color: var(--ink);
   font-size: 1.14rem;
+}
+
+.landing-search-field__value select {
+  all: unset;
+  width: 100%;
+  min-height: 2.8rem;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-hand), cursive;
+  font-size: 1.14rem;
+}
+
+.landing-search-field__value select:focus {
+  outline: none;
+}
+
+.landing-search-field__date-pair {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.landing-search-field__date-pair select {
+  flex: 1;
+}
+
+.landing-search-field__distance {
+  justify-content: space-between;
 }
 
 .landing-search-panel__actions,
@@ -912,6 +984,94 @@ button {
   outline: none;
 }
 
+.icon-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.icon-picker-label {
+  margin-bottom: 0.75rem;
+  color: var(--blue);
+  font-size: 1.05rem;
+  font-family: var(--font-hand), cursive;
+}
+
+.icon-picker-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 10rem;
+  border: 3px solid rgba(47, 100, 211, 0.24);
+  border-radius: 1.8rem;
+  background: #fff;
+  padding: 1.2rem;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  width: 100%;
+}
+
+.icon-picker-button.is-selected {
+  border-color: var(--blue);
+  box-shadow: 0 0.5rem 0 rgba(47, 100, 211, 0.18);
+  transform: translateY(-2px);
+  background: rgba(173, 199, 255, 0.15);
+}
+
+.icon-picker-button__emoji {
+  font-size: 4rem;
+  line-height: 1;
+}
+
+.icon-picker-button span:last-child {
+  font-size: 1.1rem;
+  color: var(--ink);
+}
+
+.current-user-card,
+.booking-history-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 3px solid rgba(47, 100, 211, 0.18);
+  border-radius: 1.5rem;
+  padding: 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.booking-history-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.booking-history-item {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0.9rem 1rem;
+  background: rgba(255, 249, 244, 0.95);
+  border: 2px solid rgba(47, 100, 211, 0.12);
+  border-radius: 1.25rem;
+}
+
+.booking-history-item strong {
+  display: block;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+
+.booking-history-button {
+  align-self: start;
+  max-width: fit-content;
+  border: 3px solid var(--blue);
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  padding: 0.65rem 1rem;
+  font-family: var(--font-hand), cursive;
+  cursor: pointer;
+}
+
 .staff-page {
   min-height: 100vh;
   padding: 2rem 1rem 3rem;
@@ -1007,6 +1167,131 @@ button {
   color: rgba(53, 53, 99, 0.8);
   font-family: var(--font-hand), cursive;
   font-size: 1.05rem;
+}
+
+.incoming-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.incoming-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  background: #fff;
+  border: 3px solid rgba(47, 100, 211, 0.18);
+  border-radius: 1.5rem;
+  padding: 1rem;
+}
+
+.incoming-card--current {
+  background: #eef5ff;
+  border-color: rgba(47, 100, 211, 0.35);
+}
+
+.incoming-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.incoming-badge {
+  display: inline-flex;
+  width: 2.7rem;
+  height: 2.7rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--yellow);
+  color: var(--ink);
+  font-size: 1.4rem;
+}
+
+.incoming-card__subtitle {
+  margin: 0.35rem 0 0;
+  color: rgba(53, 53, 99, 0.75);
+  font-size: 0.98rem;
+}
+
+.incoming-time {
+  margin: 0.6rem 0 0;
+  color: rgba(53, 53, 99, 0.75);
+  font-size: 0.96rem;
+}
+
+.user-action-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.user-action-block__label {
+  margin: 0;
+  color: var(--blue);
+  font-size: 1rem;
+  font-family: var(--font-hand), cursive;
+}
+
+.emergency-contact-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.15rem;
+  background: var(--blue);
+  color: #fff;
+  border-radius: 999px;
+  border: 3px solid var(--blue);
+  text-decoration: none;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.emergency-contact-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.5rem 0 rgba(0, 0, 0, 0.08);
+}
+
+.emergency-contact-list {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.emergency-contact-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  background: #fff;
+  border: 3px solid rgba(47, 100, 211, 0.28);
+  border-radius: 1.4rem;
+  padding: 1rem;
+}
+
+.issue-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: right;
+}
+
+.issue-card__label {
+  margin: 0;
+  color: var(--blue);
+  font-size: 0.95rem;
+}
+
+.issue-card__value {
+  margin: 0.25rem 0 0;
+  font-weight: 700;
+}
+
+.issue-card__note {
+  margin: 0.4rem 0 0;
+  color: rgba(53, 53, 99, 0.78);
+  font-size: 0.96rem;
 }
 
 .staff-table-wrap {
@@ -1216,11 +1501,11 @@ button {
   flex-direction: column;
   gap: 0.8rem;
   background: #fff;
-  border: 4px solid var(--blue);
+  border: 4px solid var(--pink-soft);
   border-radius: 1.6rem;
   padding: 1.2rem;
   min-height: 100%;
-  box-shadow: 0 0.7rem 0 rgba(47, 100, 211, 0.16);
+  box-shadow: 0 0.7rem 0 rgba(248, 189, 223, 0.3);
 }
 
 .resource-card--shelter {
@@ -1314,7 +1599,7 @@ button {
   align-self: flex-start;
   justify-content: center;
   text-decoration: none;
-  background: var(--ink);
+  background: var(--blue);
   color: #fff;
   padding: 0.7rem 1.15rem;
   font-size: 1.1rem;
@@ -1323,8 +1608,8 @@ button {
 .print-button {
   cursor: pointer;
   align-self: flex-start;
-  background: var(--yellow);
-  color: var(--ink);
+  background: var(--blue);
+  color: #fff;
   padding: 0.7rem 1.15rem;
   font-size: 1.1rem;
 }
@@ -1411,6 +1696,139 @@ button {
 
 .print-sheet__page {
   color: #111;
+  background: #fff7c4;
+  border: 4px solid #f6d35a;
+  border-radius: 1.6rem;
+  padding: 1.4rem;
+}
+
+.print-sheet__page--secondary {
+  page-break-before: always;
+  break-before: page;
+}
+
+.activity-pass-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.activity-pass-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 7rem;
+  padding: 0.8rem 1rem;
+  border-radius: 2rem;
+  background: #ffd5ef;
+  color: #9b2e73;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.activity-pass-header h1 {
+  margin: 0;
+  font-size: 2.3rem;
+  color: #5d2d90;
+}
+
+.activity-pass-subtitle {
+  background: rgba(236, 219, 255, 0.8);
+  border: 2px solid rgba(168, 126, 204, 0.35);
+  border-radius: 1.5rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  color: #5f4176;
+}
+
+.activity-pass-subtitle strong {
+  display: block;
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.activity-pass-card {
+  border-radius: 1.6rem;
+  border: 3px solid rgba(183, 119, 198, 0.3);
+  background: rgba(255, 249, 255, 0.92);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.activity-pass-card--soft {
+  background: rgba(255, 244, 255, 0.95);
+}
+
+.activity-pass-card__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.8rem;
+  font-weight: 700;
+  color: #63316d;
+}
+
+.activity-pass-field-row {
+  display: grid;
+  grid-template-columns: 11rem 1fr;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.activity-pass-field-row--language {
+  grid-template-columns: 11rem 1fr;
+}
+
+.activity-pass-language-options {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.activity-pass-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.activity-pass-line {
+  display: inline-block;
+  min-height: 1.8rem;
+  border-bottom: 2px solid #8a4aa6;
+  width: 100%;
+}
+
+.activity-pass-line--short {
+  width: 6rem;
+}
+
+.activity-pass-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.activity-pass-card--mini {
+  padding: 1rem;
+}
+
+.activity-pass-field-row--transport {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.activity-pass-footer {
+  margin-top: 1rem;
+  padding: 1rem;
+  text-align: center;
+  border-top: 2px dashed rgba(147, 81, 166, 0.25);
+  color: #624273;
 }
 
 .print-sheet__destination-head h1 {
@@ -1523,9 +1941,10 @@ button {
 
 .print-sheet__help-card {
   margin-top: 1.3rem;
-  border: 2px solid #222;
+  border: 2px solid #a97a10;
   border-radius: 1rem;
   padding: 1rem;
+  background: rgba(255, 249, 210, 0.95);
 }
 
 .print-sheet__qr {
@@ -1726,7 +2145,7 @@ button {
     min-height: 0;
     padding: 0;
     color: #000 !important;
-    background: #fff !important;
+    background: #fff7c4 !important;
   }
 
   .print-sheet h1 {
