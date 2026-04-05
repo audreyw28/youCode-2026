@@ -1,8 +1,10 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo, useState } from 'react';
+import { ResidentQR } from './components/ResidentQR';
 import { communityCentres } from '../lib/data/communityData';
-import foodData from '../lib/data/free-and-low-cost-food-programs.json';
+import { childcarePrograms } from '../lib/data/childcareData';
 import { shelters } from '../lib/data/shelterData';
 
 type ResourceType = 'all' | 'shelter' | 'food' | 'community';
@@ -11,6 +13,7 @@ type ResourceItem = {
   id: string;
   name: string;
   address: string;
+  printAddress: string;
   phone: string | null;
   category: Exclude<ResourceType, 'all'>;
   hasChild: boolean;
@@ -18,13 +21,36 @@ type ResourceItem = {
   lat?: number | null;
   lng?: number | null;
   extra?: string | null;
+  transitSteps: string[];
+  transitRoute: string;
+  estimatedTime: string;
+  stopName: string;
+  appointmentLabel: string;
 };
 
 const categoryMeta: Record<Exclude<ResourceType, 'all'>, { label: string; eyebrow: string }> = {
-  shelter: { label: 'Shelter', eyebrow: 'Rest' },
-  food: { label: 'Food', eyebrow: 'Eat' },
-  community: { label: 'Community', eyebrow: 'Connect' },
+  shelter: { label: 'Shelter', eyebrow: 'Dignity' },
+  food: { label: 'Emergency Childcare', eyebrow: 'Childcare' },
+  community: { label: 'Career', eyebrow: 'Career Transition' },
 };
+
+const featureCards = [
+  {
+    title: 'Verified Trust',
+    copy: 'Every place on this list is screened so families can start from safer, trusted options.',
+    icon: 'Shield',
+  },
+  {
+    title: 'Instant Matches',
+    copy: 'Move through nearby support quickly with clear categories, directions, and printable notes.',
+    icon: 'Spark',
+  },
+  {
+    title: 'Language Support',
+    copy: 'Simple labels and guided next steps help people navigate services with more confidence.',
+    icon: 'Translate',
+  },
+];
 
 function PencilCaseArt({ className }: { className?: string }) {
   return (
@@ -83,50 +109,77 @@ export default function Home() {
   const [withChild, setWithChild] = useState(false);
   const [wheelchair, setWheelchair] = useState(false);
   const [activeType, setActiveType] = useState<ResourceType>('all');
+  const [selectedForPrint, setSelectedForPrint] = useState<ResourceItem | null>(null);
 
   const allResources = useMemo<ResourceItem[]>(() => {
-    const shelterItems = shelters.map((s) => ({
-      id: s.shelter_id,
+    const shelterItems = shelters.map((s, index) => ({
+      id: s.shelter_id ?? `shelter-${index}`,
       name: s.name ?? 'Unknown',
       address: s.city ?? 'Unknown address',
+      printAddress: s.city ?? 'Address shared directly by shelter staff',
       phone: s.phone ?? null,
       category: 'shelter' as const,
       hasChild: s.childrens_programming === 'onsite',
       hasWheelchair: s.accessibility === 'fully',
-      lat: s.lat,
-      lng: s.lng,
+      lat: typeof s.lat === 'number' ? s.lat : typeof s.lat === 'string' ? Number(s.lat) || null : null,
+      lng: typeof s.lng === 'number' ? s.lng : typeof s.lng === 'string' ? Number(s.lng) || null : null,
       extra: s.type ?? null,
+      transitSteps: [
+        'Travel by bus or SkyTrain toward the city listed on this shelter card.',
+        'Check in with shelter staff before sharing personal details in public.',
+        'Ask the desk team for the safest arrival entrance and intake queue.',
+        'Keep this printout available for staff sign-off after your visit.',
+      ],
+      transitRoute: `Bus 99 (Eastbound) -> Transfer to regional service toward ${s.city ?? 'the shelter city'}.`,
+      estimatedTime: 'Approx. 45 mins from Walter Gage Residence.',
+      stopName: `${s.city ?? 'Shelter'} main arrival stop`,
+      appointmentLabel: 'Shelter intake at 10:00 AM',
     }));
 
-    const foodItems = (foodData as Array<Record<string, string | number | null | undefined>>).map((f, i) => ({
+    const foodItems = childcarePrograms.map((f, i) => ({
       id: `food-${i}`,
-      name: typeof f.program_name === 'string' ? f.program_name : 'Unknown',
-      address:
-        typeof f.location_address === 'string'
-          ? f.location_address
-          : typeof f.local_areas === 'string'
-            ? f.local_areas
-            : 'Unknown address',
-      phone: typeof f.signup_phone_number === 'string' ? f.signup_phone_number : null,
+      name: f.program_name,
+      address: f.location_address,
+      printAddress: f.location_address,
+      phone: f.signup_phone_number,
       category: 'food' as const,
-      hasChild: false,
-      hasWheelchair: f.wheelchair_accessible === 'Yes',
-      lat: typeof f.latitude === 'number' ? f.latitude : null,
-      lng: typeof f.longitude === 'number' ? f.longitude : null,
-      extra: typeof f.meal_cost === 'string' ? f.meal_cost : null,
+      hasChild: true,
+      hasWheelchair: f.wheelchair_accessible,
+      lat: f.latitude,
+      lng: f.longitude,
+      extra: f.population_served,
+      transitSteps: f.transit_steps,
+      transitRoute: 'Bus 99 (Eastbound) -> Transfer to Expo Line at Commercial-Broadway.',
+      estimatedTime: 'Approx. 45 mins from Walter Gage Residence.',
+      stopName: `Exit at the stop nearest ${f.location_address.split(',')[0]}.`,
+      appointmentLabel: 'Job interview at 10:00 AM',
     }));
 
     const communityItems = communityCentres.map((c, i) => ({
       id: `cc-${i}`,
       name: c.name ?? 'Unknown',
       address: c.address ?? c.area ?? 'Unknown address',
+      printAddress:
+        c.address && c.area
+          ? `${c.address}, ${c.area}, Vancouver, BC`
+          : c.address ?? c.area ?? 'Unknown address',
       phone: null,
       category: 'community' as const,
       hasChild: false,
       hasWheelchair: false,
       lat: c.lat,
       lng: c.lng,
-      extra: c.area ?? null,
+      extra: c.area ? `${c.area} career transition hub` : 'Career transition support',
+      transitSteps: [
+        `Ride transit toward ${c.area ?? 'the neighbourhood service hub'}.`,
+        `Exit near ${c.address ?? c.name ?? 'the centre entrance'}.`,
+        'Check the front desk for employment coaching, resume help, and intake hours.',
+        'Ask staff to sign the Proof of Visit section before you leave.',
+      ],
+      transitRoute: `Bus 99 (Eastbound) -> Transfer to local service for ${c.area ?? 'the destination neighbourhood'}.`,
+      estimatedTime: 'Approx. 45 mins from Walter Gage Residence.',
+      stopName: `Get off at ${c.address ?? c.name ?? 'the closest stop'}.`,
+      appointmentLabel: 'Career appointment at 10:00 AM',
     }));
 
     return [...shelterItems, ...foodItems, ...communityItems];
@@ -141,6 +194,14 @@ export default function Home() {
     });
   }, [activeType, allResources, wheelchair, withChild]);
 
+  const handlePrint = (item: ResourceItem) => {
+    setSelectedForPrint(item);
+
+    requestAnimationFrame(() => {
+      window.print();
+    });
+  };
+
   return (
     <main className="home-page">
       <section className="hero-section">
@@ -152,24 +213,100 @@ export default function Home() {
           <RulerArt className="supply-art ruler-art" />
         </div>
 
-        <div className="note-sheet">
-          <div className="note-sheet__paper">
-            <p className="note-sheet__eyebrow">Resource notebook</p>
-            <h1>Safe &amp; Seen</h1>
-            <p className="note-sheet__subhead">
-              Find shelters, food programs, and community centres in one friendly place.
-            </p>
-            <div className="note-sheet__stats">
-              <span>{allResources.length} total spots</span>
-              <span>Vancouver support guide</span>
+        <div className="landing-shell">
+          <header className="landing-nav">
+            <Link href="/" className="landing-brand">
+              <span className="landing-brand__badge">FM</span>
+              <span>Free me</span>
+            </Link>
+
+            <nav className="landing-nav__links" aria-label="Primary">
+              <a href="#features">Features</a>
+              <a href="#resources">Resources</a>
+              <a href="#contact">Contact</a>
+            </nav>
+
+            <div className="landing-nav__actions">
+              <Link href="/login" className="landing-nav__secondary">
+                User login
+              </Link>
+              <Link href="/admin" className="landing-nav__primary">
+                Admin login
+              </Link>
             </div>
-          </div>
-          <span className="tape tape-left" aria-hidden="true" />
-          <span className="tape tape-right" aria-hidden="true" />
+          </header>
+
+          <section className="landing-hero">
+            <p className="landing-hero__eyebrow">Welcome home</p>
+            <h1>Free me</h1>
+            <div className="landing-hero__message">
+              <p>
+                Find calm, clear next steps with trusted shelter, childcare, and career support gathered in one place.
+              </p>
+            </div>
+          </section>
+
+          <section id="features" className="landing-features">
+            {featureCards.map((card) => (
+              <article key={card.title} className="landing-feature-card">
+                <div className="landing-feature-card__icon" aria-hidden="true">
+                  {card.icon}
+                </div>
+                <h2>{card.title}</h2>
+                <p>{card.copy}</p>
+              </article>
+            ))}
+          </section>
+
+          <section className="landing-search-panel">
+            <div className="landing-search-panel__head">
+              <div>
+                <p className="landing-search-panel__kicker">Quick start</p>
+                <h2>Find safe support near you</h2>
+              </div>
+              <div className="landing-search-panel__assist">Translation-friendly guidance</div>
+            </div>
+
+            <div className="landing-search-grid">
+              <div className="landing-search-field">
+                <span>Need</span>
+                <div className="landing-search-field__value">Shelter, childcare, or career help</div>
+              </div>
+              <div className="landing-search-field">
+                <span>Children welcome</span>
+                <div className="landing-search-field__value">{withChild ? 'Yes, currently filtered' : 'Optional filter available'}</div>
+              </div>
+              <div className="landing-search-field">
+                <span>Stroller access</span>
+                <div className="landing-search-field__value">{wheelchair ? 'Yes, currently filtered' : 'Optional filter available'}</div>
+              </div>
+              <div className="landing-search-field">
+                <span>Available places</span>
+                <div className="landing-search-field__value">{filtered.length} options showing now</div>
+              </div>
+              <div className="landing-search-field">
+                <span>Total verified spots</span>
+                <div className="landing-search-field__value">{allResources.length} places loaded</div>
+              </div>
+              <div className="landing-search-field">
+                <span>Best next step</span>
+                <div className="landing-search-field__value">Browse the cards below and print a visit sheet</div>
+              </div>
+            </div>
+
+            <div className="landing-search-panel__actions">
+              <a href="#resources" className="landing-search-panel__primary">
+                Find a place now
+              </a>
+              <Link href="/login" className="landing-search-panel__secondary">
+                Browse with user login
+              </Link>
+            </div>
+          </section>
         </div>
       </section>
 
-      <section className="content-shell">
+      <section id="resources" className="content-shell">
         <div className="panel-card panel-card--filters">
           <div className="panel-heading">
             <div>
@@ -202,12 +339,12 @@ export default function Home() {
               onClick={() => setWheelchair(!wheelchair)}
               className={`toggle-chip alt ${wheelchair ? 'is-on' : ''}`}
             >
-              Wheelchair accessible
+              Stroller access
             </button>
           </div>
 
           <p className="helper-text">
-            Use the filters to narrow the list, then open directions for transit-friendly routing.
+            Use the filters to narrow the list, then print a transit-ready visit sheet when you need one.
           </p>
         </div>
 
@@ -264,12 +401,135 @@ export default function Home() {
                     <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="direction-button">
                       Get directions
                     </a>
+                    <button type="button" className="print-button" onClick={() => handlePrint(item)}>
+                      Print visit sheet
+                    </button>
                   </article>
                 );
               })}
             </div>
           )}
         </div>
+
+        <div id="contact" className="panel-card landing-contact-card">
+          <div className="panel-heading panel-heading--results">
+            <div>
+              <p className="panel-kicker">Stay connected</p>
+              <h2>Need help getting started?</h2>
+            </div>
+            <p className="helper-text">Use the logins above or print a visit sheet once you find a match.</p>
+          </div>
+
+          <div className="landing-contact-card__actions">
+            <Link href="/login" className="note-sheet__admin-link">
+              User login
+            </Link>
+            <Link href="/admin" className="note-sheet__admin-link">
+              Admin login
+            </Link>
+          </div>
+        </div>
+
+        <section
+          className={`print-sheet print-only-section ${selectedForPrint ? 'print-sheet--ready' : ''}`}
+          aria-hidden={!selectedForPrint}
+        >
+          {selectedForPrint ? (
+            <div className="print-sheet__page">
+              <div className="print-sheet__destination-head">
+                <p className="print-sheet__eyebrow">{categoryMeta[selectedForPrint.category].eyebrow}</p>
+                <h1>
+                  <span className="print-sheet__icon" aria-hidden="true">
+                    🚶
+                  </span>
+                  {selectedForPrint.name}
+                </h1>
+                <p className="print-sheet__category">
+                  <span className="print-sheet__icon" aria-hidden="true">
+                    📅
+                  </span>
+                  {selectedForPrint.appointmentLabel}
+                </p>
+              </div>
+
+              <div className="print-sheet__block">
+                <h2>Destination</h2>
+                <p className="print-sheet__address">{selectedForPrint.printAddress}</p>
+              </div>
+
+              <div className="print-sheet__postit">
+                <p className="print-sheet__postit-label">Transit Guide Post-it</p>
+                <div className="print-sheet__postit-row">
+                  <span>Route</span>
+                  <strong>{selectedForPrint.transitRoute}</strong>
+                </div>
+                <div className="print-sheet__postit-row">
+                  <span>Estimated Time</span>
+                  <strong>{selectedForPrint.estimatedTime}</strong>
+                </div>
+                <div className="print-sheet__postit-row">
+                  <span>Stop Name</span>
+                  <strong>{selectedForPrint.stopName}</strong>
+                </div>
+                <div className="print-sheet__timeline" aria-label="Transit timeline">
+                  <div className="print-sheet__timeline-step">
+                    <div className="print-sheet__timeline-icon" aria-hidden="true">
+                      🚌
+                    </div>
+                    <div>
+                      <strong>Start</strong>
+                      <p>UBC (Walter Gage)</p>
+                      <p>#99 B-Line Bus</p>
+                    </div>
+                  </div>
+                  <div className="print-sheet__timeline-arrow" aria-hidden="true">
+                    -&gt;
+                  </div>
+                  <div className="print-sheet__timeline-step">
+                    <div className="print-sheet__timeline-icon" aria-hidden="true">
+                      🚇
+                    </div>
+                    <div>
+                      <strong>Transfer</strong>
+                      <p>Commercial-Broadway Stn</p>
+                      <p>Expo Line Train</p>
+                    </div>
+                  </div>
+                  <div className="print-sheet__timeline-arrow" aria-hidden="true">
+                    -&gt;
+                  </div>
+                  <div className="print-sheet__timeline-step">
+                    <div className="print-sheet__timeline-icon" aria-hidden="true">
+                      🚶
+                    </div>
+                    <div>
+                      <strong>End</strong>
+                      <p>{selectedForPrint.stopName}</p>
+                      <p>{selectedForPrint.printAddress}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="print-sheet__help-card">
+                <h2>Help Me</h2>
+                <div className="print-sheet__help-copy">
+                  <p>
+                    Lost. No Phone. Going to: {selectedForPrint.printAddress}. Please Help.
+                  </p>
+                </div>
+                <div className="print-sheet__line-group">
+                  <span>Emergency Shelter Contact</span>
+                  <span className="print-sheet__line">{selectedForPrint.phone ?? ''}</span>
+                </div>
+              </div>
+
+              <div className="print-sheet__qr">
+                <ResidentQR residentId={selectedForPrint.id} size={112} />
+              </div>
+            </div>
+          ) : null}
+        </section>
       </section>
     </main>
   );

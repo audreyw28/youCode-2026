@@ -25,3 +25,4 @@ backend/.env.*
 *.pem
 *.log
 *.tsbuildinfo
+node_modules
