@@ -105,6 +105,35 @@ function RulerArt({ className }: { className?: string }) {
   );
 }
 
+function BackpackIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 120 120" className={className} aria-hidden="true">
+      <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+        <path
+          d="M39 29C39 18 48 10 60 10C72 10 81 18 81 29"
+          stroke="#2f64d3"
+          strokeWidth="5"
+        />
+        <path
+          d="M26 36C26 28 32 22 40 22H80C88 22 94 28 94 36V91C94 100 87 108 78 108H42C33 108 26 100 26 91V36Z"
+          fill="#ffbe74"
+          stroke="#2f64d3"
+          strokeWidth="5"
+        />
+        <path d="M37 36H83V48C83 54 78 59 72 59H48C42 59 37 54 37 48V36Z" fill="#adc7ff" stroke="#2f64d3" strokeWidth="4" />
+        <path d="M45 59H75C81 59 86 64 86 70V91C86 96 82 100 77 100H43C38 100 34 96 34 91V70C34 64 39 59 45 59Z" fill="#fffaf4" stroke="#2f64d3" strokeWidth="4" />
+        <path d="M48 59V47" stroke="#2f64d3" strokeWidth="4" />
+        <path d="M72 59V47" stroke="#2f64d3" strokeWidth="4" />
+        <path d="M50 76C53 71 59 68 65 69C71 70 75 75 76 81" stroke="#2f64d3" strokeWidth="4" />
+        <path d="M56 82L57 82" stroke="#2f64d3" strokeWidth="5" />
+        <path d="M69 82L70 82" stroke="#2f64d3" strokeWidth="5" />
+        <path d="M46 39L35 50" stroke="#fff0a6" strokeWidth="6" />
+        <path d="M74 39L86 51" stroke="#fff0a6" strokeWidth="6" />
+      </g>
+    </svg>
+  );
+}
+
 export default function Home() {
   const [withChild, setWithChild] = useState(false);
   const [wheelchair, setWheelchair] = useState(false);
@@ -216,8 +245,10 @@ export default function Home() {
         <div className="landing-shell">
           <header className="landing-nav">
             <Link href="/" className="landing-brand">
-              <span className="landing-brand__badge">FM</span>
-              <span>Free me</span>
+              <span className="landing-brand__badge">
+                <BackpackIcon className="landing-brand__icon" />
+              </span>
+              <span className="landing-brand__label">freeme!</span>
             </Link>
 
             <nav className="landing-nav__links" aria-label="Primary">
