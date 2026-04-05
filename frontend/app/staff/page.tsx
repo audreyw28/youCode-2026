@@ -1,4 +1,7 @@
+'use client';
+
 import { ResidentQR } from '../components/ResidentQR';
+import { useState, useEffect } from 'react';
 
 const urgentRequests = [
   {
@@ -74,6 +77,22 @@ function statusClass(status: string) {
 }
 
 export default function StaffDashboardPage() {
+  const [incomingResidents, setIncomingResidents] = useState([]);
+
+  useEffect(() => {
+    const loadResidents = () => {
+      const residents = JSON.parse(localStorage.getItem('incomingResidents') || '[]');
+      setIncomingResidents(residents.slice(-10)); // last 10
+    };
+
+    loadResidents();
+
+    const handleStorageChange = () => loadResidents();
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   return (
     <main className="staff-page">
       <section className="staff-hero">
@@ -130,6 +149,33 @@ export default function StaffDashboardPage() {
               <p className="staff-metric__note">{card.note}</p>
             </article>
           ))}
+        </div>
+
+        <div className="staff-panel">
+          <div className="panel-heading">
+            <div>
+              <p className="panel-kicker">Real-time updates</p>
+              <h2>Incoming Residents</h2>
+            </div>
+            <div className="count-pill">{incomingResidents.length} recent</div>
+          </div>
+
+          <div className="incoming-list">
+            {incomingResidents.length === 0 ? (
+              <p>No recent residents.</p>
+            ) : (
+              incomingResidents.map((resident: any) => (
+                <article key={resident.id} className="incoming-card">
+                  <div>
+                    <h3>{resident.resource}</h3>
+                    <p>{resident.address}</p>
+                    <p className="incoming-time">{new Date(resident.timestamp).toLocaleString()}</p>
+                  </div>
+                  <ResidentQR residentId={resident.id} size={80} />
+                </article>
+              ))
+            )}
+          </div>
         </div>
 
         <div className="staff-panel">
